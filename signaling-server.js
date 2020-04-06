@@ -1,7 +1,7 @@
 /**************/
 /*** CONFIG ***/
 /**************/
-const configData = require('./config.js');
+const configData = require('./config.json');
 var PORT = configData.PORT;
 const USEHTTPS = configData.USEHTTPS; // true or false
 /*************/
