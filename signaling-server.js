@@ -13,7 +13,6 @@ const https = require('https'),
   fs = require('fs');
 
 if (fs.existsSync(configData.PRIVKEYPATH)) {
-  content = fs.readFileSync(filename);
   httpsOptions = {
     key  : fs.readFileSync(configData.PRIVKEYPATH),
     cert : fs.readFileSync(configData.CERTPATH)

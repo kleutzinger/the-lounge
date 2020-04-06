@@ -2,4 +2,4 @@
 wget https://github.com/kleutzinger/the-lounge/archive/master.zip
 unzip master.zip
 mv the-lounge-master/* ./
-rm -r the-lounge-master master.zip
+rm -rf the-lounge-master master.zip
