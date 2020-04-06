@@ -1,8 +1,9 @@
 /**************/
 /*** CONFIG ***/
 /**************/
-var PORT = 8080;
-
+const configData = require('./config.js');
+var PORT = configData.PORT;
+const USEHTTPS = configData.USEHTTPS; // true or false
 /*************/
 /*** SETUP ***/
 /*************/
@@ -10,18 +11,18 @@ var PORT = 8080;
 const https = require('https'),
   fs = require('fs');
 
-//const options = {
-//   key: fs.readFileSync("/etc/letsencrypt/live/jabdownsmash.com/privkey.pem"),
-//   cert: fs.readFileSync("/etc/letsencrypt/live/jabdownsmash.com/cert.pem")
-//};
+const options = {
+  key  : fs.readFileSync('/etc/letsencrypt/live/kevbot.xyz/privkey.pem'),
+  cert : fs.readFileSync('/etc/letsencrypt/live/kevbot.xyz/cert.pem')
+};
 
 var express = require('express');
 var http = require('http');
 var bodyParser = require('body-parser');
 var app = express();
-var server = http.createServer(app);
+//var server = http.createServer(app);
 
-//var server = https.createServer(options, main)
+var server = https.createServer(options, main);
 var io = require('socket.io').listen(server);
 //io.set('log level', 2);
 
