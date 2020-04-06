@@ -4,6 +4,7 @@
 const configData = require('./config.json');
 var PORT = configData.PORT;
 const USEHTTPS = configData.USEHTTPS; // true or false
+var httpsOptions = { key: '', cert: '' }; // gets OVERWRITTEN, EMPTY AS DEFAULT
 /*************/
 /*** SETUP ***/
 /*************/
@@ -11,10 +12,13 @@ const USEHTTPS = configData.USEHTTPS; // true or false
 const https = require('https'),
   fs = require('fs');
 
-const options = {
-  key  : fs.readFileSync('/etc/letsencrypt/live/kevbot.xyz/privkey.pem'),
-  cert : fs.readFileSync('/etc/letsencrypt/live/kevbot.xyz/cert.pem')
-};
+if (fs.existsSync(configData.PRIVKEYPATH)) {
+  content = fs.readFileSync(filename);
+  httpsOptions = {
+    key  : fs.readFileSync(configData.PRIVKEYPATH),
+    cert : fs.readFileSync(configData.CERTPATH)
+  };
+}
 
 var express = require('express');
 var http = require('http');
@@ -22,14 +26,14 @@ var bodyParser = require('body-parser');
 var app = express();
 //var server = http.createServer(app);
 
-var server = https.createServer(options, main);
+var server = https.createServer(httpsOptions, app);
 var io = require('socket.io').listen(server);
 //io.set('log level', 2);
 
 server.listen(PORT, null, function() {
   console.log('Listening on port ' + PORT);
 });
-//main.use(express.bodyParser());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/', function(req, res) {
   res.sendFile(__dirname + '/client.html');

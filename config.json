@@ -1,4 +1,6 @@
 {
   "PORT": 8080,
-  "USE_HTTPS": true
+  "USE_HTTPS": true,
+  "CERTPATH": "/etc/letsencrypt/live/kevbot.xyz/cert.pem",
+  "PRIVKEYPATH": "/etc/letsencrypt/live/kevbot.xyz/privkey.pem"
 }
