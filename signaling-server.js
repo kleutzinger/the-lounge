@@ -86,14 +86,14 @@ io.sockets.on('connection', function(socket) {
 
     for (id in channels[channel]) {
       channels[channel][id].emit('addPeer', {
-        peer_id: socket.id,
-        should_create_offer: false,
-        position: avatars[socket.id]
+        peer_id             : socket.id,
+        should_create_offer : false,
+        position            : avatars[socket.id]
       });
       socket.emit('addPeer', {
-        peer_id: id,
-        should_create_offer: true,
-        position: avatars[socket.id]
+        peer_id             : id,
+        should_create_offer : true,
+        position            : avatars[socket.id]
       });
     }
 
@@ -129,8 +129,8 @@ io.sockets.on('connection', function(socket) {
 
     if (peer_id in sockets) {
       sockets[peer_id].emit('iceCandidate', {
-        peer_id: socket.id,
-        ice_candidate: ice_candidate
+        peer_id       : socket.id,
+        ice_candidate : ice_candidate
       });
     }
   });
@@ -145,8 +145,8 @@ io.sockets.on('connection', function(socket) {
 
     if (peer_id in sockets) {
       sockets[peer_id].emit('sessionDescription', {
-        peer_id: socket.id,
-        session_description: session_description
+        peer_id             : socket.id,
+        session_description : session_description
       });
     }
   });
@@ -165,8 +165,8 @@ io.sockets.on('connection', function(socket) {
       // if (peer_id == socket.id) continue;
 
       socket.emit('updatePeerAvatars', {
-        peer_id: peer_id,
-        avatar: avatars[peer_id]
+        peer_id : peer_id,
+        avatar  : avatars[peer_id]
       });
     }
     setTimeout(updatePeerAvatars, 200);
