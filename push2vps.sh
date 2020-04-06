@@ -1,3 +1,4 @@
+#!/bin/bash
 DEST=""
 if [ $1 = "live" ]; then
   DEST="root@kevbot.xyz:/root/sites/the-lounge/"
