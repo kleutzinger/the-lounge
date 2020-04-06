@@ -11,10 +11,10 @@ var PORT = 8080;
 const https = require("https"),
 fs = require("fs");
 
-const options = {
-   key: fs.readFileSync("/etc/letsencrypt/live/jabdownsmash.com/privkey.pem"),
-   cert: fs.readFileSync("/etc/letsencrypt/live/jabdownsmash.com/cert.pem")
-};
+//const options = {
+//   key: fs.readFileSync("/etc/letsencrypt/live/jabdownsmash.com/privkey.pem"),
+//   cert: fs.readFileSync("/etc/letsencrypt/live/jabdownsmash.com/cert.pem")
+//};
 
 
 
@@ -22,9 +22,9 @@ var express = require('express');
 var http = require('http');
 var bodyParser = require('body-parser')
 var main = express()
-//var server = http.createServer(main)
+var server = http.createServer(main)
 
-var server = https.createServer(options, main)
+//var server = https.createServer(options, main)
 var io  = require('socket.io').listen(server);
 //io.set('log level', 2);
 
