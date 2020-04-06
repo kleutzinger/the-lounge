@@ -7,11 +7,24 @@ var PORT = 8080;
 /*************/
 /*** SETUP ***/
 /*************/
+
+const https = require("https"),
+fs = require("fs");
+
+const options = {
+   key: fs.readFileSync("/etc/letsencrypt/live/jabdownsmash.com/privkey.pem"),
+   cert: fs.readFileSync("/etc/letsencrypt/live/jabdownsmash.com/cert.pem")
+};
+
+
+
 var express = require('express');
 var http = require('http');
 var bodyParser = require('body-parser')
 var main = express()
-var server = http.createServer(main)
+//var server = http.createServer(main)
+
+var server = https.createServer(options, main)
 var io  = require('socket.io').listen(server);
 //io.set('log level', 2);
 
@@ -31,6 +44,7 @@ main.get('/', function(req, res){ res.sendFile(__dirname + '/client.html'); });
 /*************************/
 var channels = {};
 var sockets = {};
+var avatars = {};
 
 /**
  * Users will connect to the signaling server, after which they'll issue a "join"
@@ -53,6 +67,7 @@ io.sockets.on('connection', function (socket) {
         }
         console.log("["+ socket.id + "] disconnected");
         delete sockets[socket.id];
+        delete avatars[socket.id];
     });
 
 
@@ -70,9 +85,11 @@ io.sockets.on('connection', function (socket) {
             channels[channel] = {};
         }
 
+        avatars[socket.id] = {"x": 0, "y": 0};
+
         for (id in channels[channel]) {
-            channels[channel][id].emit('addPeer', {'peer_id': socket.id, 'should_create_offer': false});
-            socket.emit('addPeer', {'peer_id': id, 'should_create_offer': true});
+            channels[channel][id].emit('addPeer', {'peer_id': socket.id, 'should_create_offer': false, "position": avatars[socket.id]});
+            socket.emit('addPeer', {'peer_id': id, 'should_create_offer': true, "position": avatars[socket.id]});
         }
 
         channels[channel][socket.id] = socket;
@@ -116,4 +133,23 @@ io.sockets.on('connection', function (socket) {
             sockets[peer_id].emit('sessionDescription', {'peer_id': socket.id, 'session_description': session_description});
         }
     });
+
+    socket.on('updatePosition', function(config) {
+        if (!(socket.id in avatars)){
+            console.log("socket id not found in avatars " + socket.id);
+            return;
+        }
+        avatars[socket.id]["x"] = config["x"];
+        avatars[socket.id]["y"] = config["y"];
+    });
+
+    function updatePeerAvatars() {
+        for (var peer_id in avatars) {
+            // if (peer_id == socket.id) continue;
+
+            socket.emit("updatePeerAvatars", {'peer_id':peer_id, "avatar":avatars[peer_id]});
+        }
+        setTimeout(updatePeerAvatars,200);
+    }
+    updatePeerAvatars();
 });
