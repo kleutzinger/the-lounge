@@ -34,8 +34,8 @@ server.listen(PORT, null, function() {
 });
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.get('/', function(req, res) {
-  res.sendFile(__dirname + '/client.html');
+app.get('/thelounge', function(req, res) {
+  res.sendFile(__dirname + '/static/client.html');
 });
 // main.get('/index.html', function(req, res){ res.sendfile('newclient.html'); });
 // main.get('/client.html', function(req, res){ res.sendfile('newclient.html'); });
