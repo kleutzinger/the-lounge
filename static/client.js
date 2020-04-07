@@ -55,6 +55,15 @@ document.addEventListener('keyup', function(e) {
   }
 });
 
+function toggleSkribbl() {
+  if(document.getElementById('skribbl').src == "") {
+    document.getElementById('skribbl').src = 'https://skribbl.io';
+  }
+  else {
+    document.getElementById('skribbl').src = '';
+  }
+}
+
 var signaling_socket = null; /* our socket.io connection to our webserver */
 var local_media_stream = null; /* our own microphone / webcam */
 var peers = {}; /* keep track of our peer connections, indexed by peer_id (aka socket.io id) */
@@ -126,9 +135,11 @@ function init() {
     if (downHeld) {
       my_Y += movementAmount;
     }
-    let joystickPos = joystick.getPosition();
-    my_X += joystickPos.x * movementAmount;
-    my_Y += joystickPos.y * movementAmount;
+    if (joystick) {
+      let joystickPos = joystick.getPosition();
+      my_X += joystickPos.x * movementAmount;
+      my_Y += joystickPos.y * movementAmount;
+    }
     if (!godMode) {
       let minX = -200;
       let minY = -200;

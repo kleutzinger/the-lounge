@@ -26,8 +26,8 @@ audio {
 }
 #joystickZone {
   position: fixed;
-  width: 35vmin;
-  height: 35vmin;
+  width: 15vmin;
+  height: 15vmin;
   left: 10vmin;
   bottom: 10vmin;
   z-index: 1000;
