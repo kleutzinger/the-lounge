@@ -76,6 +76,14 @@ function init() {
     signaling_socket.emit('part', channel);
   }
 
+  $('#globalText').change(() => {
+    signaling_socket.emit('updateGlobalText', $('#globalText').val());
+  });
+
+  signaling_socket.on('updateGlobalText', (data) => {
+    $('#globalText').val(data);
+  });
+
   function updateMyAvatar() {
     signaling_socket.emit('updatePosition', { x: my_X, y: my_Y });
     setTimeout(updateMyAvatar, 200);
@@ -121,10 +129,9 @@ function init() {
       let distance = Math.sqrt(dx * dx + dy * dy);
       el[0].volume = Math.max(0, Math.min(1, (900 - distance) / 800));
       if (el[0].volume == 0) {
-        el[0].srcObject.getTracks().forEach(t => t.enabled = false);
-      }
-      else {
-        el[0].srcObject.getTracks().forEach(t => t.enabled = true);
+        el[0].srcObject.getTracks().forEach((t) => (t.enabled = false));
+      } else {
+        el[0].srcObject.getTracks().forEach((t) => (t.enabled = true));
       }
       local_media[0].volume = 0;
     }

@@ -53,6 +53,7 @@ app.use('/static', express.static('static'));
 var channels = {};
 var sockets = {};
 var avatars = {};
+var sharedState = { globalText: 'global Messageboard' };
 
 /**
  * Users will connect to the signaling server, after which they'll issue a "join"
@@ -91,7 +92,7 @@ io.sockets.on('connection', function(socket) {
     if (!(channel in channels)) {
       channels[channel] = {};
     }
-
+    socket.emit('updateGlobalText', sharedState.globalText);
     avatars[socket.id] = { x: 0, y: 0 };
 
     for (id in channels[channel]) {
@@ -132,10 +133,10 @@ io.sockets.on('connection', function(socket) {
   socket.on('relayICECandidate', function(config) {
     var peer_id = config.peer_id;
     var ice_candidate = config.ice_candidate;
-    console.log(
-      '[' + socket.id + '] relaying ICE candidate to [' + peer_id + '] ',
-      ice_candidate
-    );
+    // console.log(
+    //   '[' + socket.id + '] relaying ICE candidate to [' + peer_id + '] ',
+    //   ice_candidate
+    // );
 
     if (peer_id in sockets) {
       sockets[peer_id].emit('iceCandidate', {
@@ -143,6 +144,12 @@ io.sockets.on('connection', function(socket) {
         ice_candidate : ice_candidate
       });
     }
+  });
+
+  socket.on('updateGlobalText', function(config) {
+    // IO.SOCKETS breaks channel stuff
+    sharedState.globalText = config;
+    io.sockets.emit('updateGlobalText', config);
   });
 
   socket.on('relaySessionDescription', function(config) {
@@ -160,7 +167,6 @@ io.sockets.on('connection', function(socket) {
       });
     }
   });
-
   socket.on('updatePosition', function(config) {
     if (!(socket.id in avatars)) {
       console.log('socket id not found in avatars ' + socket.id);

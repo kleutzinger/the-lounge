@@ -42,3 +42,14 @@ button {
   font-size: 8vh;
   width: 90vw;
 }
+
+#television {
+  position: absolute;
+}
+
+#globalText {
+  position: fixed;
+  top: 300px;
+  right: 0;
+  z-index: 1000;
+}
