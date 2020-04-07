@@ -182,9 +182,9 @@ function init() {
       my_X += joystickPos.x * movementAmount;
       my_Y += joystickPos.y * movementAmount;
     }
-    if (!godMode) {
-      let minX = -200;
-      let minY = -200;
+    if (!guiOptions["godMode"]) {
+      let minX = 0;
+      let minY = 0;
       my_X = my_X < minX ? minX : my_X;
       my_Y = my_Y < minY ? minY : my_Y;
       let maxX = 5000 - 320 - 200;
