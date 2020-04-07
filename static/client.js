@@ -6,6 +6,19 @@ var local_media = null;
 var godMode = false;
 
 const joystick = createJoystick(document.getElementById('joystickZone'));
+
+let gui = new dat.GUI();
+gui.add({"toggleJoystick":function(){
+  let x = document.getElementById('joystickZone');
+
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}}, 'toggleJoystick');
+
+
 function isScrolledIntoView(elem)
 {
     var docViewTop = $(window).scrollTop();
