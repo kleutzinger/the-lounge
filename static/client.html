@@ -22,6 +22,9 @@
         <div id="destroy" onclick="document.getElementById('destroy').parentNode.removeChild(document.getElementById('destroy')); init();" class="fixedDiv">
             welcome to kevin's party! rules: you need a webcam. arrow keys to move. joystick in the bottom left for mobile users. click anywhere to start!
         </div>
+
+        <button id="skribblLoad" onclick="document.getElementById('skribbl').src = 'https://skribbl.io';">load skribbl</button>
+        <iframe id="skribbl"></iframe>
         <!-- 
         the <video> and <audio> tags are all added and removed dynamically
         in 'onAddStream', 'setup_local_media', and 'removePeer'/'disconnect'

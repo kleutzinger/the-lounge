@@ -6,7 +6,24 @@ var local_media = null;
 var godMode = false;
 
 const joystick = createJoystick(document.getElementById('joystickZone'));
+function isScrolledIntoView(elem)
+{
+    var docViewTop = $(window).scrollTop();
+    var docViewBottom = docViewTop + $(window).height();
 
+    var elemTop = $(elem).offset().top;
+    var elemBottom = elemTop + $(elem).height();
+
+    let visibleTop = ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+
+    var docViewLeft = $(window).scrollLeft();
+    var docViewRight = docViewLeft + $(window).width();
+
+    var elemLeft = $(elem).offset().left;
+    var elemRight = elemLeft + $(elem).width();
+
+    return visibleTop && ((elemRight <= docViewRight) && (elemLeft >= docViewLeft));
+}
 
 document.addEventListener('keydown', function(e) {
   // console.log(e);
@@ -117,7 +134,7 @@ function init() {
       let minY = -200;
       my_X = my_X < minX ? minX : my_X;
       my_Y = my_Y < minY ? minY : my_Y;
-      let maxX = 3000 - 320 - 200;
+      let maxX = 5000 - 320 - 200;
       let maxY = 3000 - 240 - 200;
       my_X = my_X > maxX ? maxX : my_X;
       my_Y = my_Y > maxY ? maxY : my_Y;
@@ -125,7 +142,8 @@ function init() {
     if (local_media != null) {
       local_media[0].style.left = '' + my_X + 'px';
       local_media[0].style.top = '' + my_Y + 'px';
-      local_media[0].scrollIntoView();
+      if(!isScrolledIntoView(local_media[0]))
+        local_media[0].scrollIntoView();
     }
     setTimeout(updateMyAvatarLocal, 20);
 
