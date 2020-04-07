@@ -10,17 +10,20 @@
         <style>
             </style>
 
+        <script src='/static/virtualjoystick.js'></script>
         <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
         <script src="/static/client-config.js"></script>
-        <script src="/static/client.js"></script>
     </head>
     <body onload='init()'>
-        <canvas id="minimap"></div>
-        <button onclick="my_X = Math.random() * 3000, my_Y = Math.random() * 3000;">teleport</button>
+        <!-- <button onclick="my_X = Math.random() * 3000, my_Y = Math.random() * 3000;">teleport</button> -->
+        <div id="joystickZone">JOYSTICK</div>
+        <!-- <button >teleport</button> -->
         <div id="destroy" onclick="document.getElementById('destroy').parentNode.removeChild(document.getElementById('destroy'))" class="fixedDiv">welcome to kevin's party! rules: you need a webcam. arrow keys to move. click me to make me go away!</div>
         <!-- 
         the <video> and <audio> tags are all added and removed dynamically
         in 'onAddStream', 'setup_local_media', and 'removePeer'/'disconnect'
         -->
+        <script src="/static/client.js"></script>
     </body>
+
 </html>
