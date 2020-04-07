@@ -68,7 +68,7 @@ audio {
 #charadesButton {
   position: absolute;
   top: 1100px;
-  right: 400px;
+  left: 400px;
   z-index: 1000;
   height: 50px;
   background: lightsteelblue;
