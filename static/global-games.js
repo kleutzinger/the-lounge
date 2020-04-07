@@ -9,17 +9,17 @@ function addCharades() {
       value : 'Charades!'
     })
     .click(() => {
-      const random_index = Math.floor(Math.random() * charadesWordlist.length);
-      alert(charadesWordlist[random_index]);
+      const randomWord =
+        charadesWordlist[Math.floor(Math.random() * charadesWordlist.length)];
+      alert(`"${randomWord}" (only you can see this!)`);
     });
   $('body').append(el);
 }
 
 function toggleSkribbl() {
-  if(document.getElementById('skribbl').src != "https://skribbl.io/") {
+  if (document.getElementById('skribbl').src != 'https://skribbl.io/') {
     document.getElementById('skribbl').src = 'https://skribbl.io';
-  }
-  else {
+  } else {
     document.getElementById('skribbl').src = '';
   }
 }
