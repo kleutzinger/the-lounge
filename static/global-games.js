@@ -16,7 +16,7 @@ function addCharades() {
 }
 
 function toggleSkribbl() {
-  if(document.getElementById('skribbl').src == "") {
+  if(document.getElementById('skribbl').src != "https://skribbl.io/") {
     document.getElementById('skribbl').src = 'https://skribbl.io';
   }
   else {
