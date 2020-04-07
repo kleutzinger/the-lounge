@@ -23,11 +23,17 @@ var express = require('express');
 var http = require('http');
 var bodyParser = require('body-parser');
 var app = express();
-//var server = http.createServer(app);
 
 var server = https.createServer(httpsOptions, app);
 var io = require('socket.io').listen(server);
 //io.set('log level', 2);
+
+// http
+//   .createServer(function(req, res) {
+//     res.writeHead(301, { Location: 'https://kevbot.xyz/thelounge' });
+//     res.end();
+//   })
+//   .listen(80);
 
 server.listen(PORT, null, function() {
   console.log('Listening on port ' + PORT);
