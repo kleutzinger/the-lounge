@@ -43,12 +43,13 @@ audio {
   width: 100%;
 }
 .fixedDiv {
-  background-color: #FFFFFF67;
+  background-color: #343434f0;
   position: fixed;
-  text-align: right;
+  /*text-align: right;*/
   right: 0;
-  bottom: 0;
+  top: 0;
   z-index: 1000;
   font-size: 8vh;
-  width: 90vw;
+  width: 100vw;
+  height:100vh;
 }
