@@ -10,6 +10,13 @@ var audioSenders = [];
 const joystick = createJoystick(document.getElementById('joystickZone'));
 
 let gui = new dat.GUI();
+gui.close();
+let guiOptions = {
+  "receiveStreams": true,
+  "godMode": false,
+}
+gui.add(guiOptions,"receiveStreams");
+gui.add(guiOptions,"godMode");
 gui.add({"toggleJoystick":function(){
   let x = document.getElementById('joystickZone');
 
@@ -157,7 +164,7 @@ function init() {
 
   function updateMyAvatarLocal() {
     let movementAmount = 10;
-    if (godMode) movementAmount = 20;
+    if (guiOptions["godMode"]) movementAmount = 20;
     if (leftHeld) {
       my_X -= movementAmount;
     }
@@ -199,7 +206,7 @@ function init() {
       let dy = el.y - my_Y;
       let distance = Math.sqrt(dx * dx + dy * dy);
       el[0].volume = Math.max(0, Math.min(1, (900 - distance) / 800));
-      if (el[0].volume == 0) {
+      if (el[0].volume == 0 || guiOptions.receiveStreams == false) {
         el[0].srcObject.getTracks().forEach((t) => (t.enabled = false));
       } else {
         el[0].srcObject.getTracks().forEach((t) => (t.enabled = true));
