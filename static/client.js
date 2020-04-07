@@ -4,6 +4,8 @@ var upHeld = false;
 var downHeld = false;
 var local_media = null;
 var godMode = false;
+var videoSender = null;
+var audioSender = null;
 
 const joystick = createJoystick(document.getElementById('joystickZone'));
 
@@ -17,6 +19,30 @@ gui.add({"toggleJoystick":function(){
     x.style.display = "none";
   }
 }}, 'toggleJoystick');
+
+gui.add({"screenShare":function(){
+  let captureStream = null;
+
+  local_media[0].srcObject.getTracks().forEach(track => track.stop())
+  navigator.mediaDevices.getDisplayMedia({audio:true, video:true}).catch(err => { console.error("Error:" + err); return null; })
+  .then(function(stream){
+      // console.log(stream);
+      var screenVideoTrack = stream.getVideoTracks()[0];
+      videoSender.replaceTrack(screenVideoTrack);
+      var screenAudioTrack = stream.getAudioTracks()[0];
+      console.log(screenAudioTrack);
+      console.log(stream.getAudioTracks());
+      audioSender.replaceTrack(screenAudioTrack);
+      local_media[0].srcObject = stream;
+      local_media_stream = stream;
+    });
+  // navigator.mediaDevices.getDisplayMedia({}).catch(err => { console.error("Error:" + err); return null; })
+  // .then(function(stream){
+  //     // console.log(stream);
+  //     var screenAudioTrack = stream.getAudioTracks()[0];
+  //     audioSender.replaceTrack(screenAudioTrack);
+  //   });
+}}, 'screenShare');
 
 
 function isScrolledIntoView(elem)
@@ -79,7 +105,6 @@ my_Y = Math.random() * 100;
 function init() {
   addCharades();
   // console.log("Connecting to signaling server");
-  signaling_socket = io(SIGNALING_SERVER);
   signaling_socket = io();
 
   signaling_socket.on('connect', function() {
@@ -230,7 +255,13 @@ function init() {
     };
 
     /* Add our local stream */
-    peer_connection.addStream(local_media_stream);
+    // peer_connection.addStream(local_media_stream);
+
+
+    let camVideoTrack = local_media_stream.getVideoTracks()[0];
+    let camAudioTrack = local_media_stream.getAudioTracks()[0];
+    videoSender = peer_connection.addTrack(camVideoTrack, local_media_stream);
+    audioSender = peer_connection.addTrack(camAudioTrack, local_media_stream);
 
     /* Only one side of the peer connection should create the
                      * offer, the signaling server picks one to be the offerer. 
