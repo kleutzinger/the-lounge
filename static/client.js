@@ -119,10 +119,12 @@ function init() {
       let dx = el.x - my_X;
       let dy = el.y - my_Y;
       let distance = Math.sqrt(dx * dx + dy * dy);
-      if (el.x % 10 == 3.33) {
-        el[0].volume = 0.8;
-      } else {
-        el[0].volume = Math.max(0, Math.min(1, (900 - distance) / 800));
+      el[0].volume = Math.max(0, Math.min(1, (900 - distance) / 800));
+      if (el[0].volume == 0) {
+        el[0].srcObject.getTracks().forEach(t => t.enabled = false);
+      }
+      else {
+        el[0].srcObject.getTracks().forEach(t => t.enabled = true);
       }
       local_media[0].volume = 0;
     }
