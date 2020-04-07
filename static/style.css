@@ -51,7 +51,7 @@ audio {
   z-index: 1000;
   font-size: 8vh;
   width: 100vw;
-  height:100vh;
+  height: 100vh;
 }
 
 #television {
@@ -59,8 +59,19 @@ audio {
 }
 
 #globalText {
-  position: fixed;
+  position: absolute;
   top: 300px;
-  right: 0;
+  right: 200px;
   z-index: 1000;
+}
+
+#charadesButton {
+  position: absolute;
+  top: 1100px;
+  right: 400px;
+  z-index: 1000;
+  height: 50px;
+  background: lightsteelblue;
+  color: purple;
+  font-size: 40px;
 }

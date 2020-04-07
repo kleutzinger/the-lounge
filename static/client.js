@@ -7,7 +7,6 @@ var godMode = false;
 
 const joystick = createJoystick(document.getElementById('joystickZone'));
 
-
 document.addEventListener('keydown', function(e) {
   // console.log(e);
   if (e.keyCode == 37) {
@@ -47,6 +46,7 @@ my_X = Math.random() * 100;
 my_Y = Math.random() * 100;
 
 function init() {
+  addCharades();
   // console.log("Connecting to signaling server");
   signaling_socket = io(SIGNALING_SERVER);
   signaling_socket = io();
