@@ -4,6 +4,10 @@ var upHeld = false;
 var downHeld = false;
 var local_media = null;
 var godMode = false;
+
+const joystick = createJoystick(document.getElementById('joystickZone'));
+
+
 document.addEventListener('keydown', function(e) {
   // console.log(e);
   if (e.keyCode == 37) {
@@ -105,6 +109,9 @@ function init() {
     if (downHeld) {
       my_Y += movementAmount;
     }
+    let joystickPos = joystick.getPosition();
+    my_X += joystickPos.x * movementAmount;
+    my_Y += joystickPos.y * movementAmount;
     if (!godMode) {
       let minX = -200;
       let minY = -200;
