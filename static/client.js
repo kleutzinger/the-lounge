@@ -4,8 +4,8 @@ var upHeld = false;
 var downHeld = false;
 var local_media = null;
 var godMode = false;
-var videoSender = null;
-var audioSender = null;
+var videoSenders = [];
+var audioSenders = [];
 
 const joystick = createJoystick(document.getElementById('joystickZone'));
 
@@ -27,12 +27,17 @@ gui.add({"screenShare":function(){
   navigator.mediaDevices.getDisplayMedia({audio:true, video:true}).catch(err => { console.error("Error:" + err); return null; })
   .then(function(stream){
       // console.log(stream);
-      var screenVideoTrack = stream.getVideoTracks()[0];
-      videoSender.replaceTrack(screenVideoTrack);
-      var screenAudioTrack = stream.getAudioTracks()[0];
-      console.log(screenAudioTrack);
-      console.log(stream.getAudioTracks());
-      audioSender.replaceTrack(screenAudioTrack);
+      for (let videoSender of videoSenders) {
+        var screenVideoTrack = stream.getVideoTracks()[0];
+        // in case stream is already closed
+        try{videoSender.replaceTrack(screenVideoTrack);}
+        catch(e){console.log(e);}
+      }
+      for (let audioSender of audioSenders) {
+        var screenAudioTrack = stream.getAudioTracks()[0];
+        try{audioSender.replaceTrack(screenAudioTrack);}
+        catch(e){console.log(e);}
+      }
       local_media[0].srcObject = stream;
       local_media_stream = stream;
     });
@@ -257,11 +262,21 @@ function init() {
     /* Add our local stream */
     // peer_connection.addStream(local_media_stream);
 
+    try {
+      let camVideoTrack = local_media_stream.getVideoTracks()[0];
+      let camAudioTrack = local_media_stream.getAudioTracks()[0];
+      let videoSender = peer_connection.addTrack(camVideoTrack, local_media_stream);
+      videoSenders.push(videoSender);
+      if (camAudioTrack) {
+        let audioSender = peer_connection.addTrack(camAudioTrack, local_media_stream);
+        audioSenders.push(audioSender);
+      }
+    }
+    catch(e) {
+      console.log(e);
+    }
+    
 
-    let camVideoTrack = local_media_stream.getVideoTracks()[0];
-    let camAudioTrack = local_media_stream.getAudioTracks()[0];
-    videoSender = peer_connection.addTrack(camVideoTrack, local_media_stream);
-    audioSender = peer_connection.addTrack(camAudioTrack, local_media_stream);
 
     /* Only one side of the peer connection should create the
                      * offer, the signaling server picks one to be the offerer. 
