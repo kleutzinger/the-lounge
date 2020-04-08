@@ -32,12 +32,13 @@ function init() {
     signaling_socket.emit('part', channel);
   }
 
-  $('#globalText').change(() => {
+  $('#globalText').click(() => {
     signaling_socket.emit('updateGlobalText', $('#globalText').val());
   });
 
   signaling_socket.on('updateGlobalText', (data) => {
     $('#globalText').val(data);
+    //eval(data);
   });
 
   function updateMyAvatar() {
