@@ -8,7 +8,7 @@ function init() {
     setup_local_media(function() {
       /* once the user has given us access to their
                          * microphone/camcorder, join the channel and start peering up */
-      join_chat_channel(DEFAULT_CHANNEL, { 'whatever-you-want-here': 'stuff' });
+      join_chat_channel(DEFAULT_CHANNEL, { customId: 'localUser' });
     });
   });
   signaling_socket.on('disconnect', function() {
@@ -79,6 +79,11 @@ function init() {
     if (local_media != null) {
       local_media[0].style.left = '' + my_X + 'px';
       local_media[0].style.top = '' + my_Y + 'px';
+      let qtrNametagWidth = parseInt($('#myNametag').css('width')) / 4;
+      $('#myNametag').css({
+        left : `${my_X - qtrNametagWidth}px`,
+        top  : `${my_Y - 200}px`
+      });
       if (!isScrolledIntoView(local_media[0])) local_media[0].scrollIntoView();
     }
     setTimeout(updateMyAvatarLocal, 20);
@@ -139,6 +144,7 @@ function init() {
       // console.log("onAddStream", event);
       var remote_media = USE_VIDEO ? $('<video>') : $('<audio>');
       remote_media.attr('autoplay', 'autoplay');
+      remote_media.attr('id', peer_id);
       if (MUTE_AUDIO_BY_DEFAULT) {
         remote_media.attr('muted', 'true');
       }
@@ -366,8 +372,10 @@ function setup_local_media(callback, errorback) {
           'muted',
           'true'
         ); /* always mute ourselves by default */
+        local_media.attr('id', 'myVideo');
         local_media.attr('controls', '');
         $('body').append(local_media);
+        $('body').append('<p id="myNametag" class="nametag">id=myNametag</p>');
         attachMediaStream(local_media[0], stream);
 
         if (callback) callback();

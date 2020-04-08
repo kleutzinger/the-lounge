@@ -104,3 +104,9 @@ audio {
   width: 1000px;
   height: 600px;
 }
+
+.nametag {
+  position: absolute;
+  z-index: 1000;
+  font-size: 100px;
+}
