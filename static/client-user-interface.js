@@ -7,16 +7,20 @@ var godMode = true;
 var videoSenders = [];
 var audioSenders = [];
 
+let serverObjects = {};
+
 const joystick = createJoystick(document.getElementById('joystickZone'));
 
 let gui = new dat.GUI();
 gui.close();
 let guiOptions = {
   receiveStreams : true,
-  godMode        : true
+  godMode        : true,
+  width: 320
 };
 gui.add(guiOptions, 'receiveStreams');
 gui.add(guiOptions, 'godMode');
+gui.add(guiOptions, 'width');
 gui.add(
   {
     toggleJoystick : function() {

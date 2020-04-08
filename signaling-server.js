@@ -5,6 +5,7 @@ const configData = require('./config.json');
 var PORT = configData.PORT;
 const USEHTTPS = configData.USEHTTPS; // true or false
 var httpsOptions = { key: '', cert: '' }; // gets OVERWRITTEN, EMPTY AS DEFAULT
+let currentObjectId = 0;
 /*************/
 /*** SETUP ***/
 /*************/
@@ -93,18 +94,28 @@ io.sockets.on('connection', function(socket) {
       channels[channel] = {};
     }
     socket.emit('updateGlobalText', sharedState.globalText);
-    avatars[socket.id] = { x: 0, y: 0 };
+
+    // create avatar for new user
+    avatars[socket.id] = {
+      id: socket.id,
+      peer_id:socket.id,
+      x: 0,
+      y: 0,
+      width: 320,
+      height: "",
+      type: "user"
+    };
 
     for (id in channels[channel]) {
       channels[channel][id].emit('addPeer', {
         peer_id             : socket.id,
         should_create_offer : false,
-        position            : avatars[socket.id]
+        // position            : avatars[socket.id]
       });
       socket.emit('addPeer', {
         peer_id             : id,
         should_create_offer : true,
-        position            : avatars[socket.id]
+        // position            : avatars[socket.id]
       });
     }
 
@@ -167,25 +178,23 @@ io.sockets.on('connection', function(socket) {
       });
     }
   });
-  socket.on('updatePosition', function(config) {
+  socket.on('updateSelf', function(config) {
     if (!(socket.id in avatars)) {
       console.log('socket id not found in avatars ' + socket.id);
       return;
     }
-    avatars[socket.id]['x'] = config['x'];
-    avatars[socket.id]['y'] = config['y'];
+    for (let prop in config) {
+      avatars[socket.id][prop] = config[prop];
+    }
   });
 
-  function updatePeerAvatars() {
-    for (var peer_id in avatars) {
+  function updateAllObjects() {
+    for (var id in avatars) {
       // if (peer_id == socket.id) continue;
 
-      socket.emit('updatePeerAvatars', {
-        peer_id : peer_id,
-        avatar  : avatars[peer_id]
-      });
+      socket.emit('updateObject', avatars[id]);
     }
-    setTimeout(updatePeerAvatars, 200);
+    setTimeout(updateAllObjects, 50);
   }
-  updatePeerAvatars();
+  updateAllObjects();
 });

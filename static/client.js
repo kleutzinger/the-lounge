@@ -42,7 +42,10 @@ function init() {
   });
 
   function updateMyAvatar() {
-    signaling_socket.emit('updatePosition', { x: my_X, y: my_Y });
+    signaling_socket.emit('updateSelf', { x: my_X, y: my_Y, width:guiOptions.width});
+    if(local_media != null) {
+      local_media[0].volume = 0;
+    }
     setTimeout(updateMyAvatar, 200);
   }
   updateMyAvatar();
@@ -78,6 +81,7 @@ function init() {
       my_Y = my_Y > maxY ? maxY : my_Y;
     }
     if (local_media != null) {
+      local_media.attr("class","positionable");
       local_media[0].style.left = '' + my_X + 'px';
       local_media[0].style.top = '' + my_Y + 'px';
       let qtrNametagWidth = parseInt($('#myNametag').css('width')) / 4;
@@ -85,23 +89,10 @@ function init() {
         left : `${my_X - qtrNametagWidth}px`,
         top  : `${my_Y - 200}px`
       });
+      local_media[0].style.width = '' + guiOptions["width"] + 'px';
       if (!isScrolledIntoView(local_media[0])) local_media[0].scrollIntoView();
     }
     setTimeout(updateMyAvatarLocal, 20);
-
-    for (let id in peer_media_elements) {
-      let el = peer_media_elements[id];
-      let dx = el.x - my_X;
-      let dy = el.y - my_Y;
-      let distance = Math.sqrt(dx * dx + dy * dy);
-      el[0].volume = Math.max(0, Math.min(1, (900 - distance) / 800));
-      if (el[0].volume == 0 || guiOptions.receiveStreams == false) {
-        el[0].srcObject.getTracks().forEach((t) => (t.enabled = false));
-      } else {
-        el[0].srcObject.getTracks().forEach((t) => (t.enabled = true));
-      }
-      local_media[0].volume = 0;
-    }
   }
   updateMyAvatarLocal();
 
@@ -259,17 +250,103 @@ function init() {
     );
     // console.log("Description Object: ", desc);
   });
-  signaling_socket.on('updatePeerAvatars', function(config) {
-    // console.log(config);
-    if (config.peer_id in peer_media_elements) {
-      let el = peer_media_elements[config.peer_id];
-      // console.log(el);
-      peer_media_elements[config.peer_id][0].style.left =
-        '' + config['avatar']['x'] + 'px';
-      peer_media_elements[config.peer_id][0].style.top =
-        '' + config['avatar']['y'] + 'px';
-      peer_media_elements[config.peer_id].x = config['avatar']['x'];
-      peer_media_elements[config.peer_id].y = config['avatar']['y'];
+
+  // This function is called whenveer the server sends an update
+  // for an object in the room. It's called once for each object
+  // as often as the server updates (200ms at time of writing)
+  signaling_socket.on('updateObject', function(config) {
+
+    // check if we already have this object, if so, update it
+    if (config.id in serverObjects) {
+      let obj = serverObjects[config.id];
+      let av = config['avatar'];
+      // copy all properties from the server onto our local object
+      // don't overwrite it so that we keep any extra properties that we
+      // added locally
+      for (let propertyName in config) {
+        serverObjects[config.id][propertyName] = config[propertyName];
+      }
+    } // if we don't have the object, create it
+    else {
+      // since it's a new object, just use the config object and
+      // modify that
+      serverObjects[config.id] = config;
+
+      // custom initializations for different object types
+      if(config.type == "user") {
+        if (config.peer_id == signaling_socket.id) {
+          config.self = true;
+        }
+      }
+      if(config.type == "iframe") {
+        config.el = $('<iframe>')
+          .attr({
+            src  : config.url,
+            class : "positionable"
+          });
+        $('body').append(config.el);
+        config.prevUrl = config.url;
+      }
+      if(config.type == "image") {
+        config.el = $('<iframe>')
+          .attr({
+            src  : config.url,
+            class : "positionable"
+          });
+        $('body').append(config.el);
+      }
+    }
+
+    // apply updates to the object element
+    let so = serverObjects[config.id];
+    
+    // we normally get the object from the server before webrtc is finished
+    // connecting, so if the element is null we check to see if the element
+    // exists yet
+    if (so.el == null && so.type == "user") {
+      if (so.peer_id in peer_media_elements) {
+        so.el = peer_media_elements[so.peer_id][0];
+        peer_media_elements[so.peer_id].attr("class","positionable");
+      }
+      else {
+        return;
+      }
+    }
+
+    // dont update self, or if the el doesn't exist
+    if (so.self || so.el == null) {
+      return;
+    }
+
+    so.el.style.left = so["x"] + "px";
+    so.el.style.top = so["y"] + "px";
+    so.el.style.zIndex = so["z"];
+    so.el.style.width = so["width"] + "px";
+    so.el.style.height = so["height"] + "px";
+
+    // type specific updates
+    if(so.type == "user") {
+      let dx = so.x - my_X;
+      let dy = so.y - my_Y;
+      let distance = Math.sqrt(dx * dx + dy * dy);
+      so.el.volume = Math.max(0, Math.min(1, (900 - distance) / 800));
+      if (so.el.volume == 0 || guiOptions.receiveStreams == false) {
+        so.el.srcObject.getTracks().forEach((t) => (t.enabled = false));
+      } else {
+        so.el.srcObject.getTracks().forEach((t) => (t.enabled = true));
+      }
+    }
+    if(so.type == "iframe") {
+      if (so.url != so.prevUrl) {
+        so.prevUrl = so.url;
+        so.el.src = so.url;
+      }
+    }
+    if(so.type == "image") {
+      if (so.url != so.prevUrl) {
+        so.prevUrl = so.url;
+        so.el.src = so.url;
+      }
     }
   });
 
@@ -378,6 +455,7 @@ function setup_local_media(callback, errorback) {
         $('body').append(local_media);
         $('body').append('<p id="myNametag" class="nametag">id=myNametag</p>');
         attachMediaStream(local_media[0], stream);
+        peer_media_elements[signaling_socket.id] = local_media;
 
         if (callback) callback();
       },

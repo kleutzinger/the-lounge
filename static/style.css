@@ -7,8 +7,8 @@ body {
   width: 3000px;
   height: 3000px;
 }
-video {
-  width: 320px;
+.positionable {
+  /*width: 320px;*/
   /*height: 240px;*/
   position: absolute;
   /*padding: 200px;*/
