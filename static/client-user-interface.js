@@ -16,11 +16,21 @@ gui.close();
 let guiOptions = {
   receiveStreams : true,
   godMode        : true,
-  width: 320
+  width          : 320,
+  streamerId     : 'btssmash'
 };
 gui.add(guiOptions, 'receiveStreams');
 gui.add(guiOptions, 'godMode');
 gui.add(guiOptions, 'width');
+gui.add(guiOptions, 'streamerId');
+gui.add(
+  {
+    setTwitch : () => {
+      return setTwitch(guiOptions.streamerId);
+    }
+  },
+  'setTwitch'
+);
 gui.add(
   {
     toggleJoystick : function() {

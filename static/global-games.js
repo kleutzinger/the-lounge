@@ -23,3 +23,28 @@ function toggleSkribbl() {
     document.getElementById('skribbl').src = '';
   }
 }
+
+function spawnTwitch(streamerId = 'btssmash', xPos = 0, yPos = 0) {
+  var el = $('<iframe/>')
+    .attr({
+      src             : `https://player.twitch.tv/?channel=${streamerId}&parent=kevbot.xyz&autoplay=true`,
+      id              : 'twitchPlayer',
+      height          : '300',
+      width           : '400',
+      frameborder     : '0',
+      scrolling       : 'no',
+      allowfullscreen : 'false',
+      class           : 'positionable'
+    })
+    .css({ left: xPos + 'px', top: yPos + 'px' });
+  $('body').append(el);
+}
+
+function setTwitch(streamerId) {
+  document
+    .getElementById('twitchPlayer')
+    .setAttribute(
+      'src',
+      `https://player.twitch.tv/?channel=${streamerId}&parent=kevbot.xyz&autoplay=true`
+    );
+}

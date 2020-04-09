@@ -109,4 +109,5 @@ audio {
   position: absolute;
   z-index: 1000;
   font-size: 100px;
+  visibility: hidden;
 }
