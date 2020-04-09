@@ -1,6 +1,6 @@
 function init() {
   initSocket();
-  spawnTwitch('mang0', 167, 1640);
+  spawnTwitch('vgtv_melee', 167, 1640); //spawns into the billiards room
   addCharades();
   // console.log("Connecting to signaling server");
 
