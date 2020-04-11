@@ -68,7 +68,7 @@ function initSocket() {
     };
     peer_connection.onaddstream = function(event) {
       // console.log("onAddStream", event);
-      var remote_media = USE_VIDEO ? $('<video>') : $('<audio>');
+      var remote_media = $('<video>');
       remote_media.attr('autoplay', 'autoplay');
       remote_media.attr('id', peer_id);
       if (MUTE_AUDIO_BY_DEFAULT) {
@@ -247,7 +247,7 @@ function setup_local_media(callback, errorback) {
   };
   if (false) {
     navigator.getUserMedia(
-      { audio: USE_AUDIO },
+      { audio: true },
       function(stream) {
         /* user accepted access to a/v */
         // console.log("Access granted to audio/video");
@@ -275,12 +275,12 @@ function setup_local_media(callback, errorback) {
     );
   } else {
     navigator.getUserMedia(
-      { audio: USE_AUDIO, video: USE_VIDEO },
+      { audio: true, video: {width:{ideal:1}} },
       function(stream) {
         /* user accepted access to a/v */
         // console.log("Access granted to audio/video");
         local_media_stream = stream;
-        local_media = USE_VIDEO ? $('<video>') : $('<audio>');
+        local_media = $('<video>');
         local_media.attr('autoplay', 'autoplay');
         local_media.attr(
           'muted',
@@ -297,7 +297,7 @@ function setup_local_media(callback, errorback) {
       },
       function() {
         navigator.getUserMedia(
-          { audio: USE_AUDIO },
+          { audio: true },
           function(stream) {
             /* user accepted access to a/v */
             // console.log("Access granted to audio/video");
