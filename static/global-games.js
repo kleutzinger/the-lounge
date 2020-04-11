@@ -24,10 +24,10 @@ function toggleSkribbl() {
   }
 }
 
-function spawnTwitch(streamerId = 'btssmash', xPos = 0, yPos = 0) {
+function spawnTwitch(streamerId = 'vgtv_melee', xPos = 0, yPos = 0) {
   var el = $('<iframe/>')
     .attr({
-      src             : `https://player.twitch.tv/?channel=${streamerId}&parent=kevbot.xyz&autoplay=true`,
+      src             : `https://player.twitch.tv/?channel=${streamerId}&parent=kevbot.xyz&autoplay=false`,
       id              : 'twitchPlayer',
       height          : '300',
       width           : '400',
@@ -47,4 +47,25 @@ function setTwitch(streamerId) {
       'src',
       `https://player.twitch.tv/?channel=${streamerId}&parent=kevbot.xyz&autoplay=true`
     );
+}
+
+function spawnIframe(attrs = {}, xPos = 0, yPos = 0) {
+  var el = $('<iframe/>')
+    .attr(attrs)
+    .css({ left: xPos + 'px', top: yPos + 'px' });
+  $('body').append($(el));
+}
+
+function spawnYoutubeIframe(videoId, xPos, yPos) {
+  const ytAttrs = {
+    src             : `https://www.youtube.com/embed/${videoId}`,
+    width           : '400',
+    height          : '300',
+    frameborder     : '0',
+    allow           : 'autoplay; encrypted-media;',
+    allowfullscreen : 'true',
+    id              : 'youtubeId',
+    class           : 'positionable'
+  };
+  spawnIframe(ytAttrs, xPos, yPos);
 }

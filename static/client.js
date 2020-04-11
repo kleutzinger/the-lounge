@@ -1,6 +1,8 @@
 function init() {
   initSocket();
-  spawnTwitch('vgtv_melee', 167, 1640); //spawns into the billiards room
+  spawnTwitch('thewaffle77', 167, 1640); //spawns into the billiards room
+  spawnYoutubeIframe('G0IBqtO1K28', 1325, 600); //puppies in the hall
+  spawnYoutubeIframe('5qap5aO4i9A', 2300, 10); //chill anime beats in the lounge
   addCharades();
   // console.log("Connecting to signaling server");
 
