@@ -119,19 +119,18 @@ function initSocket() {
       peer_connection.createOffer().then(
         function(local_description) {
           console.log("Local offer description is: ", local_description);
-          peer_connection.setLocalDescription(
-            local_description,
+          peer_connection.setLocalDescription(local_description).then(
             function() {
               signaling_socket.emit('relaySessionDescription', {
                 peer_id             : peer_id,
                 session_description : local_description
               });
               console.log("Offer setLocalDescription succeeded");
-            },
-            function() {
-              Alert('Offer setLocalDescription failed!');
+            }).catch(
+            function(e) {
+              console.log('Offer setLocalDescription failed!');
             }
-          ).catch(function(e){console.log(e); console.log("inside")});
+          );
         }
       ).catch(function(e){console.log(e)})
     }
@@ -193,7 +192,9 @@ function initSocket() {
   signaling_socket.on('iceCandidate', function(config) {
     var peer = peers[config.peer_id];
     var ice_candidate = config.ice_candidate;
-    peer.addIceCandidate(new RTCIceCandidate(ice_candidate));
+    peer.addIceCandidate(new RTCIceCandidate(ice_candidate)).catch(function(e){
+      console.log(e)
+    });
   });
 
   /**
@@ -299,13 +300,13 @@ function setup_local_media(callback, errorback) {
 
         if (callback) callback();
       },
-      function() {
-        console.log("couldn't add video, trying audio only")
+      function(e) {
+        console.log("couldn't add video, trying audio only", e)
         navigator.getUserMedia(
           { audio: true },
           function(stream) {
             /* user accepted access to a/v */
-            console.log("Access granted to audio/video");
+            console.log("Access granted to audio only");
             local_media_stream = stream;
             local_media = $('<audio>');
             local_media.attr('autoplay', 'autoplay');
@@ -319,9 +320,9 @@ function setup_local_media(callback, errorback) {
 
             if (callback) callback();
           },
-          function() {
+          function(e) {
             /* user denied access to a/v */
-            console.log("Access denied for audio/video");
+            console.log("Access denied for audio/video", e);
             alert(
               'Unable to access to the camera/microphone, demo will not work.'
             );
