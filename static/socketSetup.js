@@ -91,11 +91,13 @@ function initSocket() {
     try {
       let camVideoTrack = local_media_stream.getVideoTracks()[0];
       let camAudioTrack = local_media_stream.getAudioTracks()[0];
-      let videoSender = peer_connection.addTrack(
-        camVideoTrack,
-        local_media_stream
-      );
-      videoSenders.push(videoSender);
+      if (camVideoTrack) {
+        let videoSender = peer_connection.addTrack(
+          camVideoTrack,
+          local_media_stream
+        );
+        videoSenders.push(videoSender);
+      }
       if (camAudioTrack) {
         let audioSender = peer_connection.addTrack(
           camAudioTrack,
