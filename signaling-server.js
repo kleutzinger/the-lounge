@@ -152,7 +152,8 @@ io.sockets.on('connection', function(socket) {
     if (peer_id in sockets) {
       sockets[peer_id].emit('iceCandidate', {
         peer_id       : socket.id,
-        ice_candidate : ice_candidate
+        ice_candidate : ice_candidate,
+        candidate : ice_candidate
       });
     }
   });
