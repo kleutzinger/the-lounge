@@ -3,50 +3,27 @@
 /**************/
 const configData = require('./config.json');
 var PORT = configData.PORT;
-const USEHTTPS = configData.USEHTTPS; // true or false
-var httpsOptions = { key: '', cert: '' }; // gets OVERWRITTEN, EMPTY AS DEFAULT
-let currentObjectId = 0;
 /*************/
 /*** SETUP ***/
 /*************/
 
-const https = require('https'),
-  fs = require('fs');
-
-if (fs.existsSync(configData.PRIVKEYPATH)) {
-  httpsOptions = {
-    key  : fs.readFileSync(configData.PRIVKEYPATH),
-    cert : fs.readFileSync(configData.CERTPATH)
-  };
-}
-
 var express = require('express');
-var http = require('http');
+const socketIO = require('socket.io');
 var bodyParser = require('body-parser');
 var app = express();
 
-var server = https.createServer(httpsOptions, app);
-var io = require('socket.io').listen(server);
-//io.set('log level', 2);
+app.use(bodyParser.json());
 
-// http
-//   .createServer(function(req, res) {
-//     res.writeHead(301, { Location: 'https://kevbot.xyz/thelounge' });
-//     res.end();
-//   })
-//   .listen(80);
-
-server.listen(PORT, null, function() {
-  console.log('Listening on port ' + PORT);
-});
-app.use(bodyParser.urlencoded({ extended: false }));
-
-app.get('/thelounge', function(req, res) {
+app.get('/', function(req, res) {
   res.sendFile(__dirname + '/static/client.html');
 });
-// main.get('/index.html', function(req, res){ res.sendfile('newclient.html'); });
-// main.get('/client.html', function(req, res){ res.sendfile('newclient.html'); });
 app.use('/static', express.static('static'));
+
+const server = app.listen(PORT, null, function() {
+  console.log('Listening on port ' + PORT);
+});
+
+const io = socketIO(server);
 
 /*************************/
 /*** INTERESTING STUFF ***/
@@ -97,24 +74,24 @@ io.sockets.on('connection', function(socket) {
 
     // create avatar for new user
     avatars[socket.id] = {
-      id: socket.id,
-      peer_id:socket.id,
-      x: 0,
-      y: 0,
-      width: 320,
-      height: "",
-      type: "user"
+      id      : socket.id,
+      peer_id : socket.id,
+      x       : 0,
+      y       : 0,
+      width   : 320,
+      height  : '',
+      type    : 'user'
     };
 
     for (id in channels[channel]) {
       channels[channel][id].emit('addPeer', {
         peer_id             : socket.id,
-        should_create_offer : false,
+        should_create_offer : false
         // position            : avatars[socket.id]
       });
       socket.emit('addPeer', {
         peer_id             : id,
-        should_create_offer : true,
+        should_create_offer : true
         // position            : avatars[socket.id]
       });
     }
@@ -153,7 +130,7 @@ io.sockets.on('connection', function(socket) {
       sockets[peer_id].emit('iceCandidate', {
         peer_id       : socket.id,
         ice_candidate : ice_candidate,
-        candidate : ice_candidate
+        candidate     : ice_candidate
       });
     }
   });
