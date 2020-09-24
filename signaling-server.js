@@ -1,8 +1,9 @@
 /**************/
 /*** CONFIG ***/
 /**************/
-const configData = require('./config.json');
-var PORT = configData.PORT;
+// const configData = require('./config.json');
+// var PORT = configData.PORT;
+const PORT = 2999;
 /*************/
 /*** SETUP ***/
 /*************/

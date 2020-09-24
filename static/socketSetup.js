@@ -2,7 +2,7 @@ function initSocket() {
   signaling_socket = io();
 
   signaling_socket.on('connect', function() {
-    console.log("Connected to signaling server");
+    console.log('Connected to signaling server');
     setup_local_media(function() {
       /* once the user has given us access to their
                          * microphone/camcorder, join the channel and start peering up */
@@ -10,7 +10,7 @@ function initSocket() {
     });
   });
   signaling_socket.on('disconnect', function() {
-    console.log("Disconnected from signaling server");
+    console.log('Disconnected from signaling server');
     /* Tear down all of our peer connections and remove all the
                      * media divs when we disconnect */
     for (peer_id in peer_media_elements) {
@@ -29,7 +29,7 @@ function initSocket() {
   function part_chat_channel(channel) {
     signaling_socket.emit('part', channel);
   }
-  
+
   /** 
                 * When we join a group, our signaling server will send out 'addPeer' events to each pair
                 * of users in the group (creating a fully-connected graph of users, ie if there are 6 people
@@ -41,7 +41,7 @@ function initSocket() {
     var peer_id = config.peer_id;
     if (peer_id in peers) {
       /* This could happen if the user joins multiple channels where the other peer is also in. */
-      console.log("Already connected to peer ", peer_id);
+      console.log('Already connected to peer ', peer_id);
       return;
     }
     var peer_connection = new RTCPeerConnection(
@@ -67,19 +67,23 @@ function initSocket() {
       }
     };
     peer_connection.ontrack = function(event) {
-      console.log("onAddStream", event);
+      console.log('onAddStream', event);
       remote_media = peer_media_elements[peer_id];
-      if(remote_media == null) {
+      console.log('adding remote_media: ', remote_media);
+      // alert(peer_id);
+      if (remote_media == null) {
+        // console.log('!!!!!! remote_media');
         var remote_media = $('<video>');
         remote_media.attr('autoplay', 'autoplay');
         remote_media.attr('id', peer_id);
         if (MUTE_AUDIO_BY_DEFAULT) {
           remote_media.attr('muted', 'true');
         }
-        remote_media.attr('playsinline', '');
+        remote_media.attr('playsinline', '1');
         remote_media.attr('controls', '');
         peer_media_elements[peer_id] = remote_media;
         peer_media_elements[peer_id][0].volume = 0;
+        console.log('appending:::::::: ', remote_media);
         $('body').append(remote_media);
       }
       attachMediaStream(remote_media[0], event.streams[0]);
@@ -115,24 +119,27 @@ function initSocket() {
                      * create an offer, then send back an answer 'sessionDescription' to us
                      */
     if (config.should_create_offer) {
-      console.log("Creating RTC offer to ", peer_id);
-      peer_connection.createOffer().then(
-        function(local_description) {
-          console.log("Local offer description is: ", local_description);
-          peer_connection.setLocalDescription(local_description).then(
-            function() {
+      console.log('Creating RTC offer to ', peer_id);
+      peer_connection
+        .createOffer()
+        .then(function(local_description) {
+          console.log('Local offer description is: ', local_description);
+          peer_connection
+            .setLocalDescription(local_description)
+            .then(function() {
               signaling_socket.emit('relaySessionDescription', {
                 peer_id             : peer_id,
                 session_description : local_description
               });
-              console.log("Offer setLocalDescription succeeded");
-            }).catch(
-            function(e) {
+              console.log('Offer setLocalDescription succeeded');
+            })
+            .catch(function(e) {
               console.log('Offer setLocalDescription failed!');
-            }
-          );
-        }
-      ).catch(function(e){console.log(e)})
+            });
+        })
+        .catch(function(e) {
+          console.log(e);
+        });
     }
   });
 
@@ -150,41 +157,41 @@ function initSocket() {
     console.log(config.session_description);
 
     var desc = new RTCSessionDescription(remote_description);
-    var stuff = peer.setRemoteDescription(desc).then(
-      function() {
-        console.log("setRemoteDescription succeeded");
+    var stuff = peer
+      .setRemoteDescription(desc)
+      .then(function() {
+        console.log('setRemoteDescription succeeded');
         if (remote_description.type == 'offer') {
-          console.log("Creating answer");
-          peer.createAnswer().then(
-            function(local_description) {
-              console.log("Answer description is: ", local_description);
-              peer.setLocalDescription(local_description).then(
-                function() {
+          console.log('Creating answer');
+          peer
+            .createAnswer()
+            .then(function(local_description) {
+              console.log('Answer description is: ', local_description);
+              peer
+                .setLocalDescription(local_description)
+                .then(function() {
                   signaling_socket.emit('relaySessionDescription', {
                     peer_id             : peer_id,
                     session_description : local_description
                   });
-                  console.log("Answer setLocalDescription succeeded");
-                }).catch(
-                function() {
+                  console.log('Answer setLocalDescription succeeded');
+                })
+                .catch(function() {
                   Alert('Answer setLocalDescription failed!');
-                }
-              );
-            }).catch(
-            function(error) {
-              console.log("Error creating answer: ", error);
+                });
+            })
+            .catch(function(error) {
+              console.log('Error creating answer: ', error);
               console.log(peer);
-            }
-          );
+            });
         }
-      }).catch(
-      function(error) {
-        console.log("setRemoteDescription error: ", error);
-      }
-    );
-    console.log("Description Object: ", desc);
+      })
+      .catch(function(error) {
+        console.log('setRemoteDescription error: ', error);
+      });
+    console.log('Description Object: ', desc);
   });
-  
+
   /**
                  * The offerer will send a number of ICE Candidate blobs to the answerer so they 
                  * can begin trying to find the best path to one another on the net.
@@ -192,8 +199,8 @@ function initSocket() {
   signaling_socket.on('iceCandidate', function(config) {
     var peer = peers[config.peer_id];
     var ice_candidate = config.ice_candidate;
-    peer.addIceCandidate(new RTCIceCandidate(ice_candidate)).catch(function(e){
-      console.log(e)
+    peer.addIceCandidate(new RTCIceCandidate(ice_candidate)).catch(function(e) {
+      console.log(e);
     });
   });
 
@@ -223,7 +230,6 @@ function initSocket() {
   });
 }
 
-
 /***********************/
 /** Local media stuff **/
 /***********************/
@@ -235,14 +241,16 @@ function setup_local_media(callback, errorback) {
   }
   /* Ask user for permission to use the computers microphone and/or camera, 
                  * attach it to an <audio> or <video> tag if they give us access. */
-  console.log("Requesting access to local audio / video inputs");
+  console.log('Requesting access to local audio / video inputs');
 
   navigator.getUserMedia =
     navigator.getUserMedia ||
     navigator.webkitGetUserMedia ||
     navigator.mozGetUserMedia ||
     navigator.msGetUserMedia ||
-    function(c, d, e) {navigator.mediaDevices.getUserMedia(c).then(d).catch(e);};
+    function(c, d, e) {
+      navigator.mediaDevices.getUserMedia(c).then(d).catch(e);
+    };
 
   attachMediaStream = function(element, stream) {
     // console.log('DEPRECATED, attachMediaStream will soon be removed.');
@@ -253,7 +261,7 @@ function setup_local_media(callback, errorback) {
       { audio: true },
       function(stream) {
         /* user accepted access to a/v */
-        console.log("Access granted to audio/video");
+        console.log('Access granted to audio/video');
         local_media_stream = stream;
         local_media = $('<audio>');
         local_media.attr('autoplay', 'autoplay');
@@ -269,7 +277,7 @@ function setup_local_media(callback, errorback) {
       },
       function() {
         /* user denied access to a/v */
-        console.log("Access denied for audio/video");
+        console.log('Access denied for audio/video');
         alert(
           'You chose not to provide access to the camera/microphone, demo will not work.'
         );
@@ -278,11 +286,11 @@ function setup_local_media(callback, errorback) {
     );
   } else {
     navigator.getUserMedia(
-      { audio: true, video: {width:{ideal:1}} },
+      { audio: true, video: { width: { ideal: 1 } } },
       function(stream) {
-        console.log("adding local stream to dom")
+        console.log('adding local stream to dom');
         /* user accepted access to a/v */
-        console.log("Access granted to audio/video");
+        console.log('Access granted to audio/video');
         local_media_stream = stream;
         local_media = $('<video>');
         local_media.attr('autoplay', 'autoplay');
@@ -301,12 +309,12 @@ function setup_local_media(callback, errorback) {
         if (callback) callback();
       },
       function(e) {
-        console.log("couldn't add video, trying audio only", e)
+        console.log("couldn't add video, trying audio only", e);
         navigator.getUserMedia(
           { audio: true },
           function(stream) {
             /* user accepted access to a/v */
-            console.log("Access granted to audio only");
+            console.log('Access granted to audio only');
             local_media_stream = stream;
             local_media = $('<audio>');
             local_media.attr('autoplay', 'autoplay');
@@ -322,7 +330,7 @@ function setup_local_media(callback, errorback) {
           },
           function(e) {
             /* user denied access to a/v */
-            console.log("Access denied for audio/video", e);
+            console.log('Access denied for audio/video', e);
             alert(
               'Unable to access to the camera/microphone, demo will not work.'
             );
