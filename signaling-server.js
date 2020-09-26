@@ -3,7 +3,7 @@
 /**************/
 // const configData = require('./config.json');
 // var PORT = configData.PORT;
-const PORT = 2999;
+const PORT = process.env.PORT || 2999;
 /*************/
 /*** SETUP ***/
 /*************/
