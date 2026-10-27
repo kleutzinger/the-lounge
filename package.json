@@ -1,16 +1,20 @@
 {
-  "name": "",
-  "version": "",
-  "description": "About =====",
-  "dependencies": {
-    "body-parser": "^1.19.0",
-    "express": "^4.17.1",
-    "socket.io": "^4.0.1"
+  "name": "the-lounge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Spatial video chat: walk your webcam avatar around a shared room",
+  "license": "Unlicense",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
   },
   "scripts": {
-    "start": "node signaling-server",
-    "pushlive": "./push2vps.sh live",
-    "testkevin": "./push2vps.sh testkevin",
-    "testaaron": "./push2vps.sh test"
+    "start": "node signaling-server.js",
+    "dev": "node --watch signaling-server.js"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "lil-gui": "^0.21.0",
+    "socket.io": "^4.8.4"
   }
 }

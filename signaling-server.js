@@ -1,179 +1,123 @@
-/**************/
-/*** CONFIG ***/
-/**************/
-// const configData = require('./config.json');
-// var PORT = configData.PORT;
+import { createServer } from 'node:http';
+import { fileURLToPath } from 'node:url';
+import express from 'express';
+import { Server } from 'socket.io';
+
 const PORT = process.env.PORT || 2999;
-/*************/
-/*** SETUP ***/
-/*************/
+const BROADCAST_INTERVAL_MS = 50;
+// the only avatar properties clients are allowed to change about themselves
+const SELF_EDITABLE = ['x', 'y', 'width'];
 
-var express = require('express');
-const socketIO = require('socket.io');
-var bodyParser = require('body-parser');
-var app = express();
+const staticDir = fileURLToPath(new URL('./static', import.meta.url));
+const lilGuiDir = fileURLToPath(new URL('./node_modules/lil-gui/dist', import.meta.url));
 
-app.use(bodyParser.json());
+const app = express();
+app.get('/', (req, res) => res.sendFile('client.html', { root: staticDir }));
+app.use('/static', express.static(staticDir));
+app.use('/vendor/lil-gui', express.static(lilGuiDir));
 
-app.get('/', function(req, res) {
-  res.sendFile(__dirname + '/static/client.html');
-});
-app.use('/static', express.static('static'));
-
-const server = app.listen(PORT, null, function() {
-  console.log('Listening on port ' + PORT);
-});
-
-const io = socketIO(server);
+const server = createServer(app);
+const io = new Server(server);
 
 /*************************/
 /*** INTERESTING STUFF ***/
 /*************************/
-var channels = {};
-var sockets = {};
-var avatars = {};
-var sharedState = { globalText: 'global Messageboard' };
+const channels = new Map(); // channel name -> Map(socket id -> socket)
+const avatars = new Map(); // socket id -> avatar
+let globalText = 'global Messageboard';
 
 /**
  * Users will connect to the signaling server, after which they'll issue a "join"
  * to join a particular channel. The signaling server keeps track of all sockets
  * who are in a channel, and on join will send out 'addPeer' events to each pair
- * of users in a channel. When clients receive the 'addPeer' even they'll begin
+ * of users in a channel. When clients receive the 'addPeer' event they'll begin
  * setting up an RTCPeerConnection with one another. During this process they'll
  * need to relay ICECandidate information to one another, as well as SessionDescription
  * information. After all of that happens, they'll finally be able to complete
- * the peer connection and will be streaming audio/video between eachother.
+ * the peer connection and will be streaming audio/video between each other.
  */
-io.sockets.on('connection', function(socket) {
-  socket.channels = {};
-  sockets[socket.id] = socket;
+io.on('connection', (socket) => {
+  const joined = new Set();
+  const log = (...args) => console.log(`[${socket.id}]`, ...args);
+  log('connection accepted');
 
-  console.log('[' + socket.id + '] connection accepted');
-  socket.on('disconnect', function() {
-    for (var channel in socket.channels) {
-      part(channel);
-    }
-    console.log('[' + socket.id + '] disconnected');
-    delete sockets[socket.id];
-    delete avatars[socket.id];
-  });
-
-  socket.on('join', function(config) {
-    console.log('[' + socket.id + '] join ', config);
-    var channel = config.channel;
-    var userdata = config.userdata;
-
-    if (channel in socket.channels) {
-      console.log('[' + socket.id + '] ERROR: already joined ', channel);
+  socket.on('join', ({ channel } = {}) => {
+    log('join', channel);
+    if (joined.has(channel)) {
+      log('ERROR: already joined', channel);
       return;
     }
+    if (!channels.has(channel)) channels.set(channel, new Map());
+    const members = channels.get(channel);
 
-    if (!(channel in channels)) {
-      channels[channel] = {};
-    }
-    socket.emit('updateGlobalText', sharedState.globalText);
+    socket.emit('updateGlobalText', globalText);
+    avatars.set(socket.id, {
+      id: socket.id,
+      peer_id: socket.id,
+      x: 0,
+      y: 0,
+      width: 320,
+      height: '',
+      type: 'user',
+    });
 
-    // create avatar for new user
-    avatars[socket.id] = {
-      id      : socket.id,
-      peer_id : socket.id,
-      x       : 0,
-      y       : 0,
-      width   : 320,
-      height  : '',
-      type    : 'user'
-    };
-
-    for (id in channels[channel]) {
-      channels[channel][id].emit('addPeer', {
-        peer_id             : socket.id,
-        should_create_offer : false
-        // position            : avatars[socket.id]
-      });
-      socket.emit('addPeer', {
-        peer_id             : id,
-        should_create_offer : true
-        // position            : avatars[socket.id]
-      });
+    for (const [id, member] of members) {
+      member.emit('addPeer', { peer_id: socket.id, should_create_offer: false });
+      socket.emit('addPeer', { peer_id: id, should_create_offer: true });
     }
 
-    channels[channel][socket.id] = socket;
-    socket.channels[channel] = channel;
+    members.set(socket.id, socket);
+    joined.add(channel);
   });
 
   function part(channel) {
-    console.log('[' + socket.id + '] part ');
-
-    if (!(channel in socket.channels)) {
-      console.log('[' + socket.id + '] ERROR: not in ', channel);
+    log('part', channel);
+    if (!joined.has(channel)) {
+      log('ERROR: not in', channel);
       return;
     }
-
-    delete socket.channels[channel];
-    delete channels[channel][socket.id];
-
-    for (id in channels[channel]) {
-      channels[channel][id].emit('removePeer', { peer_id: socket.id });
+    joined.delete(channel);
+    const members = channels.get(channel);
+    members.delete(socket.id);
+    for (const [id, member] of members) {
+      member.emit('removePeer', { peer_id: socket.id });
       socket.emit('removePeer', { peer_id: id });
     }
+    if (members.size === 0) channels.delete(channel);
   }
   socket.on('part', part);
 
-  socket.on('relayICECandidate', function(config) {
-    var peer_id = config.peer_id;
-    var ice_candidate = config.ice_candidate;
-    // console.log(
-    //   '[' + socket.id + '] relaying ICE candidate to [' + peer_id + '] ',
-    //   ice_candidate
-    // );
-
-    if (peer_id in sockets) {
-      sockets[peer_id].emit('iceCandidate', {
-        peer_id       : socket.id,
-        ice_candidate : ice_candidate,
-        candidate     : ice_candidate
-      });
-    }
+  socket.on('disconnect', () => {
+    for (const channel of joined) part(channel);
+    avatars.delete(socket.id);
+    log('disconnected');
   });
 
-  socket.on('updateGlobalText', function(config) {
-    // IO.SOCKETS breaks channel stuff
-    sharedState.globalText = config;
-    io.sockets.emit('updateGlobalText', config);
+  socket.on('relayICECandidate', ({ peer_id, ice_candidate } = {}) => {
+    io.to(peer_id).emit('iceCandidate', { peer_id: socket.id, ice_candidate });
   });
 
-  socket.on('relaySessionDescription', function(config) {
-    var peer_id = config.peer_id;
-    var session_description = config.session_description;
-    console.log(
-      '[' + socket.id + '] relaying session description to [' + peer_id + '] ',
-      session_description
-    );
-
-    if (peer_id in sockets) {
-      sockets[peer_id].emit('sessionDescription', {
-        peer_id             : socket.id,
-        session_description : session_description
-      });
-    }
-  });
-  socket.on('updateSelf', function(config) {
-    if (!(socket.id in avatars)) {
-      console.log('socket id not found in avatars ' + socket.id);
-      return;
-    }
-    for (let prop in config) {
-      avatars[socket.id][prop] = config[prop];
-    }
+  socket.on('relaySessionDescription', ({ peer_id, session_description } = {}) => {
+    log('relaying session description to', peer_id, session_description?.type);
+    io.to(peer_id).emit('sessionDescription', { peer_id: socket.id, session_description });
   });
 
-  function updateAllObjects() {
-    for (var id in avatars) {
-      // if (peer_id == socket.id) continue;
+  socket.on('updateGlobalText', (text) => {
+    globalText = String(text);
+    io.emit('updateGlobalText', globalText);
+  });
 
-      socket.emit('updateObject', avatars[id]);
+  socket.on('updateSelf', (update) => {
+    const avatar = avatars.get(socket.id);
+    if (!avatar) return;
+    for (const prop of SELF_EDITABLE) {
+      if (Number.isFinite(update?.[prop])) avatar[prop] = update[prop];
     }
-    setTimeout(updateAllObjects, 50);
-  }
-  updateAllObjects();
+  });
 });
+
+setInterval(() => {
+  if (avatars.size > 0) io.emit('updateObjects', [...avatars.values()]);
+}, BROADCAST_INTERVAL_MS);
+
+server.listen(PORT, () => console.log(`Listening on port ${PORT}`));

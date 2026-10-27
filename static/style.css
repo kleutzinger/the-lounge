@@ -8,21 +8,13 @@ body {
   height: 3000px;
 }
 .positionable {
-  /*width: 320px;*/
-  /*height: 240px;*/
   position: absolute;
-  /*padding: 200px;*/
-  /*border:  3px solid black;*/
-}
-.spinner {
 }
 audio {
   width: 320px;
   height: 240px;
   position: absolute;
   padding: 200px;
-  /*background-color:*/
-  /*border:  3px solid black;*/
 }
 #joystickZone {
   position: fixed;
@@ -40,22 +32,21 @@ audio {
   cursor: pointer;
   height: 100%;
   user-select: none;
+  touch-action: none;
   width: 100%;
 }
 .fixedDiv {
   background-color: #343434f0;
   position: fixed;
-  /*text-align: right;*/
   right: 0;
   top: 0;
   z-index: 1000;
   font-size: 8vh;
+  color: #eee;
+  font-family: system-ui, sans-serif;
+  cursor: pointer;
   width: 100vw;
   height: 100vh;
-}
-
-#television {
-  position: absolute;
 }
 
 #globalText {
@@ -79,7 +70,8 @@ audio {
   border-radius: 2em;
   box-sizing: border-box;
   text-decoration: none;
-  font-family: 'Roboto', sans-serif;
+  font-family: system-ui, sans-serif;
+  cursor: pointer;
   font-weight: 600;
   color: #ffffff;
   text-shadow: 0 0.04em 0.04em rgba(0, 0, 0, 0.35);
@@ -103,11 +95,4 @@ audio {
   top: 1000px;
   width: 1000px;
   height: 600px;
-}
-
-.nametag {
-  position: absolute;
-  z-index: 1000;
-  font-size: 100px;
-  visibility: hidden;
 }
